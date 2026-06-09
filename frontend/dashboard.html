@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AQI Live Forecast · Anand Vihar / Delhi</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #080c10;
+    --bg-card: #0d1318;
+    --bg-card2: #101820;
+    --bg-card3: #0a1016;
+    --border: rgba(0,200,255,0.13);
+    --border-bright: rgba(0,200,255,0.28);
+    --accent-cyan: #00d4ff;
+    --accent-cyan-dim: rgba(0,212,255,0.18);
+    --accent-orange: #ff6a00;
+    --accent-red: #ff2d55;
+    --accent-yellow: #ffd60a;
+    --accent-green: #30d158;
+    --text-primary: #e8f4f8;
+    --text-secondary: #7aa0b0;
+    --text-dim: #3a5565;
+    --unhealthy-red: #ff3b30;
+    --unhealthy-orange: #ff6b35;
+    --sensitive-yellow: #ffd60a;
+    --moderate-green: #30d158;
+    --glow-cyan: 0 0 16px rgba(0,212,255,0.35);
+    --glow-red: 0 0 20px rgba(255,45,55,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,80,120,0.18) 0%, transparent 70%),
+      linear-gradient(180deg, #080c10 0%, #060a0e 100%);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,220,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,220,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dashboard {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin: 0 auto;
+    padding: 18px 24px 40px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0,212,255,0.07);
+    border: 1px solid var(--border-bright);
+    padding: 4px 12px 4px 8px;
+    border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    animation: pulse-dot 1.4s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--accent-red);
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .title-block h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    line-height: 1.2;
+  }
+  .title-block h1 span { color: var(--accent-cyan); }
+
+  .timestamp {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  .menu-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: 3px;
+    transition: border-color 0.2s;
+  }
+  .menu-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+  /* ── AQI INDEX CARD ── */
+  .aqi-index-card {
+    background: linear-gradient(135deg, #1a0a0a 0%, #200808 50%, #180606 100%);
+    border: 1px solid rgba(255,45,55,0.3);
+    border-radius: 6px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 140px;
+    box-shadow: 0 0 30px rgba(255,45,55,0.15), inset 0 1px 0 rgba(255,100,100,0.08);
+  }
+
+  .aqi-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .aqi-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--unhealthy-red);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(255,45,55,0.6), 0 0 60px rgba(255,45,55,0.3);
+    animation: aqi-flicker 4s ease-in-out infinite;
+    transition: color 0.5s, text-shadow 0.5s;
+  }
+
+  @keyframes aqi-flicker {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.88; }
+  }
+
+  .aqi-status {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--unhealthy-red);
+    margin-top: 4px;
+    letter-spacing: 1px;
+    transition: color 0.5s;
+  }
+
+  .aqi-composite {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* ── TOP ROW LAYOUT ── */
+  .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 20px;
+  }
+
+  /* ── O3 / NO2 PANEL ── */
+  .o3-panel {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  .tab-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tab {
+    padding: 8px 22px;
+    border-radius: 3px;
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: rgba(0,212,255,0.12);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 0;
+  }
+
+  .stat-cell {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 1.6px;
+    color: #9fc4d2;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 34px;
+    font-weight: 800;
+    color: #f3fbff;
+    line-height: 1.2;
+    transition: all 0.3s;
+  }
+  .stat-value .unit {
+    font-size: 24px;
+    font-weight: 600;
+    color: #9dc2d1;
+    margin-left: 5px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .delta-neg { color: var(--accent-cyan); }
+
+  /* ── TEMP & CONDITIONS ── */
+  .conditions-panel {
+    flex: 1;
+    min-height: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .panel-header-line {
+    width: 20px; height: 2px;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 6px var(--accent-cyan);
+  }
+
+  .panel-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .conditions-panel .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+  }
+
+  .model-section > .panel-header .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+  }
+
+  .conditions-grid {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .cond-cell {
+    flex: 1;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .cond-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 1.6px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .cond-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    transition: all 0.3s;
+  }
+
+  .cond-value sup {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* ── MAP SECTION ── */
+  .map-section {
+    background: var(--bg-card3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .map-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 30px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+  }
+
+  .map-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 25px;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .map-container {
+    position: relative;
+    height: 400px;
+    overflow: hidden;
+    cursor: grab;
+    background: #060d12;
+  }
+  .map-container:active { cursor: grabbing; }
+
+  #map-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .map-zoom-controls {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+  }
+
+  .zoom-btn {
+    width: 30px; height: 30px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    color: var(--accent-cyan);
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+    font-family: 'Share Tech Mono', monospace;
+    transition: background 0.2s;
+  }
+  .zoom-btn:hover { background: rgba(0,212,255,0.15); }
+
+  .map-recenter {
+    position: absolute;
+    bottom: 80px;
+    right: 14px;
+    width: 30px; height: 30px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    color: var(--accent-cyan);
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+    font-family: 'Share Tech Mono', monospace;
+    transition: background 0.2s;
+  }
+  .map-recenter:hover { background: rgba(0,212,255,0.15); }
+
+  .map-legend {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    background: rgba(6,13,18,0.85);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .legend-dot {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(8,12,16,0.95);
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    padding: 6px 10px;
+    pointer-events: none;
+    z-index: 20;
+    display: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    box-shadow: var(--glow-cyan);
+  }
+  .tooltip .tt-name { color: var(--accent-cyan); font-size: 11px; margin-bottom: 2px; }
+  .tooltip .tt-aqi { font-size: 13px; font-weight: bold; }
+
+  /* ════════════════════════════════
+     ── TIME SLIDER SECTION ──
+  ════════════════════════════════ */
+  .model-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .model-section .panel-header {
+    margin-bottom: 20px;
+  }
+
+  /* Time Slider Track Wrapper */
+  .time-slider-wrapper {
+    margin-bottom: 22px;
+  }
+
+  .time-slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .time-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    text-shadow: 0 0 14px rgba(0,212,255,0.5);
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+
+  .time-period-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  .time-period-badge.rush {
+    background: rgba(255,106,0,0.1);
+    border-color: rgba(255,106,0,0.3);
+    color: var(--accent-orange);
+  }
+
+  /* Tick marks row */
+  .slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+    margin-bottom: 4px;
+  }
+
+  .tick-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    text-align: center;
+    min-width: 28px;
+    user-select: none;
+  }
+
+  .tick-label.highlight {
+    color: var(--accent-cyan);
+  }
+
+  /* Custom range input */
+  .time-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+  }
+
+  /* Track */
+  .slider-track-container {
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  .slider-track-bg {
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 4px;
+    background: rgba(0,180,220,0.08);
+    border: 1px solid var(--border);
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .slider-track-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #0099cc);
+    box-shadow: 0 0 8px rgba(0,212,255,0.5);
+    border-radius: 4px;
+    transition: width 0.05s;
+  }
+
+  /* Segment markers (rush hour zones) */
+  .slider-segments {
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 4px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .rush-zone {
+    position: absolute;
+    height: 100%;
+    background: rgba(255,106,0,0.18);
+    border-radius: 2px;
+  }
+
+  .time-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00d4ff;
+    border: 2px solid #080c10;
+    box-shadow: 0 0 12px rgba(0,212,255,0.7), 0 0 24px rgba(0,212,255,0.3);
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .time-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 18px rgba(0,212,255,0.9), 0 0 36px rgba(0,212,255,0.4);
+  }
+
+  .time-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00d4ff;
+    border: 2px solid #080c10;
+    box-shadow: 0 0 12px rgba(0,212,255,0.7);
+    cursor: pointer;
+  }
+
+  .time-range::-webkit-slider-runnable-track { background: transparent; height: 4px; }
+  .time-range::-moz-range-track { background: transparent; height: 4px; }
+
+  /* Phase indicators below slider */
+  .slider-phases {
+    display: flex;
+    margin-top: 10px;
+    gap: 2px;
+  }
+
+  .phase-seg {
+    height: 3px;
+    border-radius: 2px;
+    flex: 1;
+    opacity: 0.5;
+  }
+
+  .phase-night  { background: #3a6a8a; }
+  .phase-morn   { background: #ffa040; }
+  .phase-day    { background: #ffd60a; }
+  .phase-eve    { background: #ff6a00; }
+  .phase-night2 { background: #3a6a8a; }
+
+  /* ── PARAMS GRID (10 cards, compact, read-only) ── */
+  .params-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+
+  .param-card {
+    background: var(--bg-card3);
+    border: 1px solid rgba(0,200,255,0.2);
+    border-radius: 4px;
+    padding: 15px 15px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .param-card.updated {
+    border-color: rgba(0,212,255,0.4);
+    animation: card-ping 0.4s ease-out;
+  }
+
+  @keyframes card-ping {
+    0%  { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+    100%{ box-shadow: 0 0 0 8px rgba(0,212,255,0); }
+  }
+
+  .param-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 25px;
+    letter-spacing: 1px;
+    color: #eefaff;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    line-height: 1.18;
+  }
+
+  .param-sublabel {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: #9fc4d2;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    line-height: 1.3;
+  }
+
+  .param-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 35px;
+    font-weight: 800;
+    color: #f3fbff;
+    line-height: 1.2;
+    text-shadow: 0 0 12px rgba(0,212,255,0.18);
+    transition: all 0.25s;
+  }
+  .param-value .unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #9dc2d1;
+    margin-left: 5px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .param-bar {
+    height: 2px;
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .param-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .bar-cyan   { background: var(--accent-cyan);   box-shadow: 0 0 6px var(--accent-cyan); }
+  .bar-orange { background: var(--accent-orange);  box-shadow: 0 0 6px var(--accent-orange); }
+  .bar-yellow { background: var(--accent-yellow);  box-shadow: 0 0 6px var(--accent-yellow); }
+  .bar-green  { background: var(--accent-green);   box-shadow: 0 0 6px var(--accent-green); }
+
+  .toggle-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    transition: all 0.3s;
+  }
+  .toggle-pill.on  { background: rgba(0,212,255,0.15); border: 1px solid var(--accent-cyan); color: #92ecff; }
+  .toggle-pill.off { background: rgba(58,85,101,0.22); border: 1px solid #5f7e8c; color: #aac8d4; }
+  .toggle-pill.rush-on { background: rgba(255,106,0,0.15); border: 1px solid var(--accent-orange); color: #ffb37a; }
+
+  /* ── RUN BUTTON ── */
+  .run-btn {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid rgba(0,212,255,0.35);
+    border-radius: 5px;
+    color: var(--accent-cyan);
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-bottom: 14px;
+  }
+
+  .run-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.06), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+
+  .run-btn:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 20px rgba(0,212,255,0.2), inset 0 0 20px rgba(0,212,255,0.05);
+    background: rgba(0,212,255,0.04);
+  }
+
+  .run-btn:hover::before { transform: translateX(100%); }
+  .run-btn .arrow { margin-left: 8px; font-size: 16px; }
+
+  .action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .graph-panel {
+    display: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+
+  .graph-panel.visible {
+    display: block;
+  }
+
+  .graph-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .graph-source {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .graph-legend-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .graph-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .graph-line-key {
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .graph-wrap {
+    position: relative;
+    height: 320px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(0,200,255,0.12);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  #daily-graph {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Scan line */
+  .map-container::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+    animation: scan 3s linear infinite;
+    pointer-events: none;
+    z-index: 5;
+  }
+  @keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (min-width: 1440px) {
+    .dashboard { padding: 28px 48px 56px; }
+    .title-block h1 { font-size: 38px; }
+    .aqi-value { font-size: 64px; }
+    .params-grid { grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .map-container { height: 480px; }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .top-row { grid-template-columns: 1fr; }
+    .params-grid { grid-template-columns: repeat(3, 1fr); }
+    .map-container { height: 360px; }
+  }
+
+  @media (max-width: 767px) {
+    .dashboard { padding: 14px 16px 30px; }
+    .title-block h1 { font-size: 22px; }
+    .aqi-value { font-size: 44px; }
+    .top-row { grid-template-columns: 1fr; gap: 12px; }
+    .action-row { grid-template-columns: 1fr; }
+    .params-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .map-container { height: 280px; }
+    .graph-wrap { height: 260px; }
+    .map-legend { padding: 10px 12px; gap: 6px; }
+    .legend-item { font-size: 11px; gap: 8px; }
+    .slider-ticks { display: none; }
+    .time-display { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="title-block">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        LIVE FORECAST · SITE 3
+      </div>
+      <h1>Anand Vihar / <span>Delhi</span></h1>
+      <div class="timestamp" id="timestamp">Monday, 4 May 2026 · 09:10 pm</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+      <button class="menu-btn">···</button>
+      <div class="aqi-index-card">
+        <div class="aqi-label">AQI Index</div>
+        <div class="aqi-value" id="header-aqi">168</div>
+        <div class="aqi-status" id="header-status">Unhealthy</div>
+        <div class="aqi-composite">O3+NO2 composite</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- O3 / CONDITIONS ROW -->
+  <div class="top-row">
+    <div class="o3-panel">
+      <div class="tab-row">
+        <button class="tab active" onclick="switchTab(this,'o3')">O3</button>
+        <button class="tab" onclick="switchTab(this,'no2')">NO2</button>
+      </div>
+      <div class="stats-row" id="stats-display"></div>
+    </div>
+
+    <div class="conditions-panel">
+      <div class="panel-header">
+        <div class="panel-header-line"></div>
+        <div class="panel-title">Temperature &amp; Conditions</div>
+      </div>
+      <div class="conditions-grid">
+        <div class="cond-cell">
+          <div class="cond-label">Temp</div>
+          <div class="cond-value" id="cond-temp">302<sup>K</sup></div>
+        </div>
+        <div class="cond-cell">
+          <div class="cond-label">HCHO</div>
+          <div class="cond-value" id="cond-hcho">3.2<sup>e-4</sup></div>
+        </div>
+        <div class="cond-cell">
+          <div class="cond-label">NO2 SAT</div>
+          <div class="cond-value" id="cond-no2sat">6.1<sup>e14</sup></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP SECTION -->
+  <div class="map-section">
+    <div class="map-header">
+      <div class="panel-header-line"></div>
+      <div class="map-title">Delhi NCR · AQI Pollution Map · Live</div>
+    </div>
+    <div class="map-container" id="mapContainer">
+      <canvas id="map-canvas"></canvas>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ff3b30;box-shadow:0 0 8px #ff3b30"></div>UNHEALTHY (151-200)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6b35;box-shadow:0 0 8px #ff6b35"></div>UNHEALTHY (101-150)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffd60a;box-shadow:0 0 8px #ffd60a"></div>SENSITIVE (101-150)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#30d158;box-shadow:0 0 8px #30d158"></div>MODERATE (51-100)</div>
+      </div>
+      <div class="map-zoom-controls">
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomOut">−</button>
+      </div>
+      <button class="map-recenter" id="recenterBtn" title="Recenter">⌖</button>
+      <div class="tooltip" id="tooltip">
+        <div class="tt-name" id="tt-name">—</div>
+        <div class="tt-aqi" id="tt-aqi">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL PARAMETERS WITH TIME SLIDER -->
+  <div class="model-section">
+    <div class="panel-header">
+      <div class="panel-header-line"></div>
+      <div class="panel-title">Model Input Parameters</div>
+    </div>
+
+    <!-- TIME SLIDER -->
+    <div class="time-slider-wrapper">
+      <div class="time-slider-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="time-display" id="time-display">14:00</div>
+          <div class="time-period-badge" id="time-period-badge">AFTERNOON</div>
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase">
+          DRAG TO SET FORECAST HOUR
+        </div>
+      </div>
+
+      <!-- Tick labels -->
+      <div class="slider-ticks" id="slider-ticks"></div>
+
+      <!-- Slider -->
+      <div class="slider-track-container">
+        <div class="slider-track-bg">
+          <div class="slider-track-fill" id="slider-fill" style="width:58.33%"></div>
+          <!-- Rush hour highlight zones -->
+          <div class="slider-segments">
+            <div class="rush-zone" style="left:33.33%;width:12.5%"></div><!-- 8-11am -->
+            <div class="rush-zone" style="left:70.83%;width:12.5%"></div><!-- 5-8pm -->
+          </div>
+        </div>
+        <input type="range" class="time-range" id="time-slider"
+               min="0" max="23" value="14" step="1">
+      </div>
+
+      <!-- Phase color band -->
+      <div class="slider-phases">
+        <!-- 0-5 night -->
+        <div class="phase-seg phase-night"  style="flex:6"></div>
+        <!-- 6-11 morning -->
+        <div class="phase-seg phase-morn"   style="flex:6"></div>
+        <!-- 12-16 day -->
+        <div class="phase-seg phase-day"    style="flex:5"></div>
+        <!-- 17-20 evening -->
+        <div class="phase-seg phase-eve"    style="flex:4"></div>
+        <!-- 21-23 night -->
+        <div class="phase-seg phase-night2" style="flex:3"></div>
+      </div>
+    </div>
+
+    <!-- 10 PARAM CARDS (auto-updated by slider) -->
+    <div class="params-grid" id="params-grid">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="run-btn" id="run-forecast-btn">Run Forecast Model <span class="arrow">›</span></button>
+    <button class="run-btn" id="view-graph-btn">View Graph <span class="arrow">›</span></button>
+  </div>
+
+  <div class="graph-panel" id="graph-panel">
+    <div class="graph-header">
+      <div class="panel-header" style="margin-bottom:0">
+        <div class="panel-header-line"></div>
+        <div class="panel-title">Daily Predicted O3 / NO2 Levels</div>
+      </div>
+      <div class="graph-source" id="graph-source">Awaiting model output</div>
+    </div>
+    <div class="graph-legend-row">
+      <div class="graph-legend-item"><span class="graph-line-key" style="background:#00d4ff;box-shadow:0 0 8px #00d4ff"></span>O3 predicted</div>
+      <div class="graph-legend-item"><span class="graph-line-key" style="background:#ff6a00;box-shadow:0 0 8px #ff6a00"></span>NO2 predicted</div>
+    </div>
+    <div class="graph-wrap">
+      <canvas id="daily-graph"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  BACKEND-CONNECTED HOURLY DATA TABLE  (0 – 23)
+//  Uses FastAPI when available, with local fallback data.
+// ══════════════════════════════════════════════
+const API_BASE_URL = 'http://127.0.0.1:8000';
+
+function getSelectedLocationKey() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('location') || 'lodhi_road_area';
+}
+
+const selectedLocationKey = getSelectedLocationKey();
+
+function formatLocationTitle(value) {
+  return value
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+    .replace(/\bArea\b/g, 'Area');
+}
+
+function updateLocationHeader(name) {
+  const site = name || formatLocationTitle(selectedLocationKey);
+  const title = document.querySelector('.title-block h1');
+  const badge = document.querySelector('.live-badge');
+  if (title) {
+    title.innerHTML = `${site} / <span>Delhi</span>`;
+  }
+  if (badge) {
+    const current = HOURLY[+document.getElementById('time-slider')?.value || 14];
+    badge.innerHTML = `<div class="live-dot"></div>LIVE FORECAST · SITE ${current?.siteId || 3}`;
+  }
+}
+
+function makeHourlyData() {
+  // Base curves — realistic Delhi diurnal patterns
+  const data = [];
+  for (let h = 0; h < 24; h++) {
+    // O3 peaks ~14:00, low at night
+    const o3_base = 30 + 65 * Math.sin(Math.max(0, (h - 6) / 16 * Math.PI));
+    const o3 = Math.round(o3_base + (h >= 10 && h <= 18 ? 12 : 0));
+    // NO2 high in rush, low midday
+    const no2_rush = (h >= 7 && h <= 10) || (h >= 17 && h <= 20);
+    const no2 = Math.round(18 + (no2_rush ? 36 : 8) + Math.random() * 4);
+    // Temperature
+    const temp = Math.round(290 + 18 * Math.sin(Math.max(0, (h - 5) / 18 * Math.PI)));
+    // NO2 satellite (column, 10^14)
+    const no2sat = +(3.8 + 3.2 * (no2_rush ? 1 : 0.4) + Math.sin(h / 5) * 0.6).toFixed(1);
+    // HCHO (10^-4)
+    const hcho = +(1.8 + 2.0 * Math.sin(Math.max(0, (h - 8) / 14 * Math.PI))).toFixed(1);
+    // AQI
+    const aqi = Math.round(60 + (o3 / 200 * 80) + (no2 / 80 * 60) + (no2_rush ? 20 : 0));
+    // Predicted (slight correction vs CAMS)
+    const o3_pred = Math.round(o3 * (0.92 + Math.random() * 0.08));
+    const no2_pred = Math.round(no2 * (0.88 + Math.random() * 0.1));
+
+    const isWeekend = false; // weekday for live
+    const isRush = (h >= 7 && h <= 10) || (h >= 17 && h <= 20);
+    const dayIndex = 1; // Monday
+
+    data.push({ h, o3, o3_pred, no2, no2_pred, temp, no2sat, hcho, aqi, isWeekend, isRush, dayIndex, siteId: 3 });
+  }
+  return data;
+}
+
+let HOURLY = makeHourlyData();
+let backendOnline = false;
+let latestRequestId = 0;
+let graphVisible = false;
+
+function normalizeForecast(payload) {
+  const inputs = payload.inputs || {};
+  const tempRaw = Number(inputs.T_forecast || 0);
+  const tempKelvin = tempRaw < 150 ? tempRaw + 273.15 : tempRaw;
+  return {
+    h: Number(payload.hour),
+    o3: Math.round(Number(inputs.O3_forecast || 0)),
+    o3_pred: Math.round(Number(payload.O3_predicted || 0)),
+    no2: Math.round(Number(inputs.NO2_forecast || 0)),
+    no2_pred: Math.round(Number(payload.NO2_predicted || 0)),
+    temp: Math.round(tempKelvin),
+    no2sat: Number(inputs.NO2_satellite || 0),
+    hcho: Number(inputs.HCHO_satellite || 0),
+    aqi: Number(payload.aqi || 0),
+    isWeekend: Boolean(inputs.is_weekend),
+    isRush: Boolean(inputs.is_rush_hour),
+    dayIndex: Number(inputs.day_of_week || 0),
+    siteId: Number(payload.site_id || inputs.site_id || 3),
+    location: payload.location,
+    status: payload.aqi_status,
+    period: payload.period
+  };
+}
+
+async function loadForecastHour(h) {
+  const requestId = ++latestRequestId;
+  const response = await fetch(`${API_BASE_URL}/forecast/${selectedLocationKey}?hour=${h}`);
+  if (!response.ok) throw new Error(`Forecast API returned ${response.status}`);
+  const payload = await response.json();
+  if (requestId !== latestRequestId) return null;
+  backendOnline = true;
+  const normalized = normalizeForecast(payload);
+  HOURLY[h] = normalized;
+  updateLocationHeader(payload.location);
+  return normalized;
+}
+
+async function loadDailyForecast() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/forecast/${selectedLocationKey}/daily`);
+    if (!response.ok) throw new Error(`Daily forecast API returned ${response.status}`);
+    const payload = await response.json();
+    if (Array.isArray(payload.hours)) {
+      HOURLY = payload.hours.map(normalizeForecast);
+      backendOnline = true;
+      updateLocationHeader(payload.location);
+      renderDailyGraph();
+    }
+  } catch (error) {
+    console.warn('Using local forecast fallback:', error);
+    backendOnline = false;
+    updateLocationHeader();
+    renderDailyGraph();
+  }
+}
+
+function getPeriodLabel(h) {
+  if (h >= 0  && h <= 4)  return 'MIDNIGHT';
+  if (h >= 5  && h <= 7)  return 'DAWN';
+  if (h >= 7  && h <= 10) return 'RUSH HOUR';
+  if (h >= 11 && h <= 13) return 'LATE MORNING';
+  if (h >= 14 && h <= 16) return 'AFTERNOON';
+  if (h >= 17 && h <= 20) return 'RUSH HOUR';
+  if (h === 21 || h === 22) return 'EVENING';
+  return 'NIGHT';
+}
+
+function isRushHour(h) {
+  return (h >= 7 && h <= 10) || (h >= 17 && h <= 20);
+}
+
+function getAqiMeta(aqi) {
+  if (aqi > 150) return { label: 'Unhealthy',        color: '#ff3b30' };
+  if (aqi > 100) return { label: 'Unhealthy for SG', color: '#ff6b35' };
+  if (aqi > 50)  return { label: 'Moderate',         color: '#ffd60a' };
+  return            { label: 'Good',              color: '#30d158' };
+}
+
+let currentTab = 'o3';
+
+function renderParams(h) {
+  const d = HOURLY[h];
+  const grid = document.getElementById('params-grid');
+
+  const params = [
+    {
+      label: 'O3 Forecast', sub: 'CAMS Ozone Forecast',
+      val: d.o3, unit: 'ppb',
+      bar: Math.round((d.o3 / 200) * 100), barClass: 'bar-cyan'
+    },
+    {
+      label: 'NO2 Forecast', sub: 'CAMS NO₂ Forecast',
+      val: d.no2, unit: 'ppb',
+      bar: Math.round((d.no2 / 80) * 100), barClass: 'bar-orange'
+    },
+    {
+      label: 'T Forecast', sub: 'Temperature',
+      val: d.temp, unit: 'K',
+      bar: Math.round(((d.temp - 280) / 40) * 100), barClass: 'bar-yellow'
+    },
+    {
+      label: 'NO2 Satellite', sub: 'Sentinel-5P NO₂',
+      val: d.no2sat.toFixed(1), unit: '×10¹⁴',
+      bar: Math.round((d.no2sat / 10) * 100), barClass: 'bar-orange'
+    },
+    {
+      label: 'HCHO Satellite', sub: 'Sentinel-5P HCHO',
+      val: d.hcho.toFixed(1), unit: '×10⁻⁴',
+      bar: Math.round((d.hcho / 5) * 100), barClass: 'bar-cyan'
+    },
+    {
+      label: 'Site ID', sub: 'Station ID',
+      val: d.siteId || '3', unit: '/7',
+      bar: Math.round(((d.siteId || 3) / 7) * 100), barClass: 'bar-cyan'
+    },
+    {
+      label: 'Hour', sub: 'Hour of Day',
+      val: h, unit: 'h',
+      bar: Math.round((h / 23) * 100), barClass: 'bar-cyan'
+    },
+    {
+      label: 'Day of Week', sub: 'Day Index',
+      val: d.dayIndex, unit: 'Mon',
+      bar: 14, barClass: 'bar-yellow'
+    },
+    {
+      label: 'Is Weekend', sub: 'Weekend Flag',
+      val: d.isWeekend ? '1' : '0', unit: '',
+      toggle: true, toggleOn: d.isWeekend, toggleLabels: ['Weekday', 'Weekend'],
+      toggleClass: d.isWeekend ? 'on' : 'off'
+    },
+    {
+      label: 'Is Rush Hour', sub: 'Rush Hour Flag',
+      val: d.isRush ? '1' : '0', unit: '',
+      toggle: true, toggleOn: d.isRush, toggleLabels: ['Off-peak', 'Rush'],
+      toggleClass: d.isRush ? 'rush-on' : 'off'
+    }
+  ];
+
+  // Re-render all cards
+  grid.innerHTML = params.map((p, i) => {
+    const barHTML = p.toggle
+      ? `<div class="toggle-pill ${p.toggleClass}">${p.toggleOn ? p.toggleLabels[1] : p.toggleLabels[0]}</div>`
+      : `<div class="param-bar"><div class="param-bar-fill ${p.barClass}" style="width:${p.bar}%"></div></div>`;
+
+    return `
+      <div class="param-card" id="pcard-${i}">
+        <div class="param-label">${p.label}</div>
+        <div class="param-sublabel">${p.sub}</div>
+        <div class="param-value">${p.val}<span class="unit">${p.unit}</span></div>
+        ${barHTML}
+      </div>`;
+  }).join('');
+
+  // Ping animation
+  setTimeout(() => {
+    grid.querySelectorAll('.param-card').forEach((c, i) => {
+      setTimeout(() => { c.classList.add('updated'); setTimeout(() => c.classList.remove('updated'), 500); }, i * 30);
+    });
+  }, 10);
+}
+
+function renderStatsPanel(h) {
+  const d = HOURLY[h];
+  const s = document.getElementById('stats-display');
+  if (currentTab === 'o3') {
+    const delta = d.o3_pred - d.o3;
+    s.innerHTML = `
+      <div class="stat-cell"><div class="stat-label">CAMS<br>Forecast</div><div class="stat-value">${d.o3}<span class="unit">ppb</span></div></div>
+      <div class="stat-cell"><div class="stat-label">Predicted</div><div class="stat-value">${d.o3_pred}<span class="unit">ppb</span></div></div>
+      <div class="stat-cell"><div class="stat-label">Delta</div><div class="stat-value delta-neg">${delta > 0 ? '+' : ''}${delta}</div></div>`;
+  } else {
+    const delta = d.no2_pred - d.no2;
+    s.innerHTML = `
+      <div class="stat-cell"><div class="stat-label">CAMS<br>Forecast</div><div class="stat-value">${d.no2}<span class="unit">ppb</span></div></div>
+      <div class="stat-cell"><div class="stat-label">Predicted</div><div class="stat-value">${d.no2_pred}<span class="unit">ppb</span></div></div>
+      <div class="stat-cell"><div class="stat-label">Delta</div><div class="stat-value delta-neg">${delta > 0 ? '+' : ''}${delta}</div></div>`;
+  }
+}
+
+function renderConditions(h) {
+  const d = HOURLY[h];
+  document.getElementById('cond-temp').innerHTML = `${d.temp}<sup>K</sup>`;
+  document.getElementById('cond-hcho').innerHTML = `${d.hcho}<sup>e-4</sup>`;
+  document.getElementById('cond-no2sat').innerHTML = `${d.no2sat}<sup>e14</sup>`;
+}
+
+function renderAqiHeader(h) {
+  const d = HOURLY[h];
+  const meta = getAqiMeta(d.aqi);
+  const aqiEl = document.getElementById('header-aqi');
+  const statusEl = document.getElementById('header-status');
+  aqiEl.textContent = d.aqi;
+  aqiEl.style.color = meta.color;
+  aqiEl.style.textShadow = `0 0 30px ${meta.color}99, 0 0 60px ${meta.color}55`;
+  statusEl.textContent = meta.label;
+  statusEl.style.color = meta.color;
+}
+
+function updateAll(h) {
+  const pct = (h / 23) * 100;
+  document.getElementById('slider-fill').style.width = pct + '%';
+
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('time-display').textContent = `${pad(h)}:00`;
+
+  const badge = document.getElementById('time-period-badge');
+  const period = HOURLY[h]?.period || getPeriodLabel(h);
+  badge.textContent = period;
+  badge.className = 'time-period-badge' + (HOURLY[h]?.isRush || isRushHour(h) ? ' rush' : '');
+
+  renderParams(h);
+  renderStatsPanel(h);
+  renderConditions(h);
+  renderAqiHeader(h);
+  updateLocationHeader(HOURLY[h]?.location);
+  if (graphVisible) renderDailyGraph();
+}
+
+async function updateFromBackend(h) {
+  updateAll(h);
+  try {
+    await loadForecastHour(h);
+    updateAll(h);
+    renderDailyGraph();
+  } catch (error) {
+    console.warn('Forecast refresh failed:', error);
+  }
+}
+
+function drawGraphLine(ctx, points, color) {
+  if (!points.length) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.6;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    if (index === 0) ctx.moveTo(point.x, point.y);
+    else ctx.lineTo(point.x, point.y);
+  });
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  points.forEach(point => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+function renderDailyGraph() {
+  const canvas = document.getElementById('daily-graph');
+  const source = document.getElementById('graph-source');
+  if (!canvas || !source) return;
+
+  const wrap = canvas.parentElement;
+  const ratio = window.devicePixelRatio || 1;
+  const width = Math.max(320, wrap.clientWidth);
+  const height = Math.max(240, wrap.clientHeight);
+  canvas.width = Math.floor(width * ratio);
+  canvas.height = Math.floor(height * ratio);
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#081017';
+  ctx.fillRect(0, 0, width, height);
+
+  const pad = { top: 26, right: 22, bottom: 42, left: 48 };
+  const plotW = width - pad.left - pad.right;
+  const plotH = height - pad.top - pad.bottom;
+  const o3Values = HOURLY.map(row => Number(row.o3_pred || 0));
+  const no2Values = HOURLY.map(row => Number(row.no2_pred || 0));
+  const maxValue = Math.max(10, ...o3Values, ...no2Values);
+  const yMax = Math.ceil(maxValue / 10) * 10;
+  const xForHour = hour => pad.left + (hour / 23) * plotW;
+  const yForValue = value => pad.top + plotH - (value / yMax) * plotH;
+
+  ctx.strokeStyle = 'rgba(0,180,220,0.11)';
+  ctx.lineWidth = 1;
+  ctx.font = "10px 'Share Tech Mono', monospace";
+  ctx.fillStyle = 'rgba(122,160,176,0.78)';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let step = 0; step <= 4; step++) {
+    const value = Math.round((yMax / 4) * step);
+    const y = yForValue(value);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(width - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(value), pad.left - 10, y);
+  }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  [0, 6, 12, 18, 23].forEach(hour => {
+    const x = xForHour(hour);
+    ctx.strokeStyle = 'rgba(0,180,220,0.08)';
+    ctx.beginPath();
+    ctx.moveTo(x, pad.top);
+    ctx.lineTo(x, height - pad.bottom);
+    ctx.stroke();
+    ctx.fillStyle = hour === +slider.value ? '#00d4ff' : 'rgba(122,160,176,0.78)';
+    ctx.fillText(String(hour).padStart(2, '0') + ':00', x, height - pad.bottom + 14);
+  });
+
+  ctx.strokeStyle = 'rgba(0,212,255,0.22)';
+  ctx.strokeRect(pad.left, pad.top, plotW, plotH);
+
+  const o3Points = HOURLY.map(row => ({ x: xForHour(row.h), y: yForValue(row.o3_pred) }));
+  const no2Points = HOURLY.map(row => ({ x: xForHour(row.h), y: yForValue(row.no2_pred) }));
+  drawGraphLine(ctx, o3Points, '#00d4ff');
+  drawGraphLine(ctx, no2Points, '#ff6a00');
+
+  const currentHour = +slider.value;
+  const markerX = xForHour(currentHour);
+  const d = HOURLY[currentHour];
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.setLineDash([4, 5]);
+  ctx.beginPath();
+  ctx.moveTo(markerX, pad.top);
+  ctx.lineTo(markerX, height - pad.bottom);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(8,12,16,0.88)';
+  ctx.strokeStyle = 'rgba(0,200,255,0.28)';
+  const boxW = 132;
+  const boxH = 54;
+  const boxX = Math.min(width - pad.right - boxW, Math.max(pad.left + 6, markerX + 10));
+  const boxY = pad.top + 10;
+  ctx.fillRect(boxX, boxY, boxW, boxH);
+  ctx.strokeRect(boxX, boxY, boxW, boxH);
+  ctx.font = "10px 'Share Tech Mono', monospace";
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#e8f4f8';
+  ctx.fillText(`${String(currentHour).padStart(2, '0')}:00 model output`, boxX + 10, boxY + 9);
+  ctx.fillStyle = '#00d4ff';
+  ctx.fillText(`O3  ${Math.round(d.o3_pred)} ppb`, boxX + 10, boxY + 27);
+  ctx.fillStyle = '#ff6a00';
+  ctx.fillText(`NO2 ${Math.round(d.no2_pred)} ppb`, boxX + 10, boxY + 41);
+  ctx.restore();
+
+  source.textContent = backendOnline ? 'Loaded from FastAPI model response' : 'Showing local fallback until API connects';
+}
+
+// ── SLIDER TICKS ──
+function buildTicks() {
+  const container = document.getElementById('slider-ticks');
+  const labels = [];
+  for (let h = 0; h < 24; h++) {
+    if (h % 3 === 0) {
+      const ampm = h === 0 ? '12A' : h < 12 ? h + 'A' : h === 12 ? '12P' : (h-12) + 'P';
+      labels.push(`<div class="tick-label ${h === 0 || h === 12 ? 'highlight' : ''}">${ampm}</div>`);
+    } else {
+      labels.push(`<div class="tick-label"></div>`);
+    }
+  }
+  // We show every hour position but only label every 3
+  const ticksAll = [];
+  for (let h = 0; h < 24; h++) {
+    if (h % 3 === 0) {
+      const ampm = h === 0 ? '12A' : h < 12 ? h + 'A' : h === 12 ? '12P' : (h-12) + 'P';
+      ticksAll.push(`<div class="tick-label ${h === 0 || h === 12 ? 'highlight' : ''}">${ampm}</div>`);
+    } else {
+      ticksAll.push(`<div class="tick-label"></div>`);
+    }
+  }
+  container.innerHTML = ticksAll.join('');
+}
+
+// ── INIT SLIDER ──
+const slider = document.getElementById('time-slider');
+slider.addEventListener('input', () => updateFromBackend(+slider.value));
+buildTicks();
+loadDailyForecast().finally(() => updateFromBackend(+slider.value)); // default 14:00
+document.getElementById('run-forecast-btn').addEventListener('click', () => updateFromBackend(+slider.value));
+document.getElementById('view-graph-btn').addEventListener('click', () => {
+  graphVisible = !graphVisible;
+  const panel = document.getElementById('graph-panel');
+  const button = document.getElementById('view-graph-btn');
+  panel.classList.toggle('visible', graphVisible);
+  button.innerHTML = `${graphVisible ? 'Hide Graph' : 'View Graph'} <span class="arrow">›</span>`;
+  if (graphVisible) {
+    renderDailyGraph();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+});
+
+// ── TAB SWITCH ──
+function switchTab(btn, mode) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentTab = mode;
+  renderStatsPanel(+slider.value);
+}
+
+// ── LIVE TIMESTAMP ──
+function updateTime() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const day = days[now.getDay()];
+  const d = now.getDate();
+  const m = months[now.getMonth()];
+  const y = now.getFullYear();
+  let h = now.getHours(), min = now.getMinutes();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  document.getElementById('timestamp').textContent =
+    `${day}, ${d} ${m} ${y} · ${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')} ${ampm}`;
+}
+updateTime();
+setInterval(updateTime, 30000);
+
+// ══════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('map-canvas');
+const ctx = canvas.getContext('2d');
+const container2 = document.getElementById('mapContainer');
+const tooltip = document.getElementById('tooltip');
+
+let scale = 1.0, offsetX = 0, offsetY = 0;
+let isDragging = false, dragStartX, dragStartY, mouseDownX = 0, mouseDownY = 0, dragMoved = false;
+const MIN_SCALE = 0.5, MAX_SCALE = 3.5;
+const MAP_BOUNDS = { north: 28.89, south: 28.47, west: 76.78, east: 77.37 };
+const MAP_WORLD = { width: 760, height: 470, padding: 44 };
+
+const nodes = [
+  { name: 'NARELA',       key: 'narela',                lat: 28.8527, lon: 77.0929, aqi: 195, color: '#ff3b30', category: 'UNHEALTHY (151-200)' },
+  { name: 'BAWANA',       key: 'bawana',                lat: 28.7997, lon: 77.0343, aqi: 188, color: '#ff3b30', category: 'UNHEALTHY (151-200)' },
+  { name: 'ROHINI',       key: 'rohini_pitampura_area', lat: 28.7383, lon: 77.0822, aqi: 162, color: '#ff6b35', category: 'UNHEALTHY (101-150)' },
+  { name: 'PITAMPURA',    key: 'rohini_pitampura_area', lat: 28.7030, lon: 77.1324, aqi: 149, color: '#ffd60a', category: 'SENSITIVE (101-150)' },
+  { name: 'WAZIRPUR',     key: 'wazirpur',              lat: 28.6997, lon: 77.1674, aqi: 158, color: '#ff6b35', category: 'UNHEALTHY (101-150)' },
+  { name: 'ANAND VIHAR',  key: 'anand_vihar',           lat: 28.6469, lon: 77.3152, aqi: 168, color: '#ff3b30', category: 'UNHEALTHY (151-200)' },
+  { name: 'CENTRAL DELHI',key: 'central_delhi',         lat: 28.6304, lon: 77.2177, aqi: 110, color: '#ffd60a', category: 'SENSITIVE (101-150)' },
+  { name: 'LODHI ROAD',   key: 'lodhi_road_area',       lat: 28.5918, lon: 77.2273, aqi: 87,  color: '#30d158', category: 'MODERATE (51-100)' },
+  { name: 'DWARKA SEC 10',key: 'dwarka_sec_10',         lat: 28.5812, lon: 77.0576, aqi: 75,  color: '#30d158', category: 'MODERATE (51-100)' },
+  { name: 'DWARKA SEC 21',key: 'dwarka_sec_21',         lat: 28.5523, lon: 77.0587, aqi: 88,  color: '#30d158', category: 'MODERATE (51-100)' },
+  { name: 'OKHLA',        key: 'okhla',                 lat: 28.5355, lon: 77.2698, aqi: 133, color: '#ff6b35', category: 'UNHEALTHY (101-150)' },
+  { name: 'JASOLA',       key: 'jasola',                lat: 28.5428, lon: 77.2941, aqi: 128, color: '#ff6b35', category: 'UNHEALTHY (101-150)' },
+  { name: 'SARITA VIHAR', key: 'sarita_vihar',          lat: 28.5286, lon: 77.2882, aqi: 119, color: '#ffd60a', category: 'SENSITIVE (101-150)' },
+];
+
+const delhiOutline = [
+  [28.875, 77.100], [28.835, 77.205], [28.760, 77.300], [28.675, 77.350],
+  [28.595, 77.325], [28.500, 77.270], [28.475, 77.155], [28.535, 77.010],
+  [28.610, 76.880], [28.720, 76.835], [28.815, 76.965]
+];
+const yamunaPath = [
+  [28.815, 77.205], [28.750, 77.225], [28.700, 77.245], [28.650, 77.275],
+  [28.600, 77.285], [28.540, 77.300], [28.500, 77.310]
+];
+const arterialRoutes = [
+  [[28.800, 77.035], [28.738, 77.082], [28.700, 77.167], [28.630, 77.218], [28.592, 77.227]],
+  [[28.552, 77.059], [28.581, 77.058], [28.630, 77.218], [28.647, 77.315]],
+  [[28.853, 77.093], [28.738, 77.082], [28.703, 77.132], [28.647, 77.315], [28.535, 77.270]]
+];
+
+function resize() { canvas.width = container2.clientWidth; canvas.height = container2.clientHeight; draw(); }
+function toScreen(vx, vy) { return { x: vx * scale + offsetX, y: vy * scale + offsetY }; }
+function projectGeo(lat, lon) {
+  const usableW = MAP_WORLD.width - MAP_WORLD.padding * 2;
+  const usableH = MAP_WORLD.height - MAP_WORLD.padding * 2;
+  const x = MAP_WORLD.padding + ((lon - MAP_BOUNDS.west) / (MAP_BOUNDS.east - MAP_BOUNDS.west)) * usableW;
+  const y = MAP_WORLD.padding + ((MAP_BOUNDS.north - lat) / (MAP_BOUNDS.north - MAP_BOUNDS.south)) * usableH;
+  return { x, y };
+}
+function updateNodeLayout() {
+  nodes.forEach(node => {
+    const p = projectGeo(node.lat, node.lon);
+    node.x = p.x;
+    node.y = p.y;
+    node.selected = node.key === selectedLocationKey || (
+      selectedLocationKey === 'rohinipitampura_area' && node.key === 'rohini_pitampura_area'
+    );
+  });
+}
+function drawGeoPath(points, strokeStyle, lineWidth, dash = []) {
+  ctx.save();
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.setLineDash(dash);
+  ctx.beginPath();
+  points.forEach(([lat, lon], i) => {
+    const p = toScreen(...Object.values(projectGeo(lat, lon)));
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+function drawGeoPolygon(points) {
+  ctx.save();
+  ctx.beginPath();
+  points.forEach(([lat, lon], i) => {
+    const p = toScreen(...Object.values(projectGeo(lat, lon)));
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0, 212, 255, 0.025)';
+  ctx.strokeStyle = 'rgba(0, 212, 255, 0.22)';
+  ctx.lineWidth = 1.4;
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+function hitTestNode(mx, my) {
+  let hit = null;
+  nodes.forEach(node => {
+    const { x: sx, y: sy } = toScreen(node.x, node.y);
+    const r = Math.max(6, 18 * scale);
+    if (Math.hypot(mx-sx, my-sy) < r + 4) hit = node;
+  });
+  return hit;
+}
+function selectMapLocation(node) {
+  if (!node?.key) return;
+  window.location.href = `dashboard.html?location=${node.key}`;
+}
+
+function draw() {
+  updateNodeLayout();
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#060d12';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(0,180,220,0.05)';
+  ctx.lineWidth = 1;
+  const gs = 60 * scale;
+  for (let x = offsetX % gs; x < W; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = offsetY % gs; y < H; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  drawGeoPolygon(delhiOutline);
+  arterialRoutes.forEach(route => drawGeoPath(route, 'rgba(122,160,176,0.12)', 1.1, [5, 7]));
+  drawGeoPath(yamunaPath, 'rgba(0,212,255,0.32)', 2.2);
+
+  ctx.font = `9px 'Share Tech Mono', monospace`;
+  ctx.fillStyle = 'rgba(0,212,255,0.36)';
+  ctx.fillText('YAMUNA', toScreen(...Object.values(projectGeo(28.615, 77.286))).x + 8, toScreen(...Object.values(projectGeo(28.615, 77.286))).y);
+
+  const conns = [[0,1],[1,2],[2,3],[3,4],[4,6],[6,7],[6,8],[8,9],[6,5],[5,10],[10,11],[11,12]];
+  ctx.strokeStyle = 'rgba(0,180,220,0.12)';
+  ctx.lineWidth = 1.2;
+  conns.forEach(([a,b]) => {
+    const pa = toScreen(nodes[a].x, nodes[a].y), pb = toScreen(nodes[b].x, nodes[b].y);
+    ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+  });
+  nodes.forEach(node => {
+    const { x: sx, y: sy } = toScreen(node.x, node.y);
+    const r = Math.max(6, 18 * scale), gr = r * 2.8;
+    const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, gr);
+    grad.addColorStop(0, node.color + 'aa');
+    grad.addColorStop(0.4, node.color + '44');
+    grad.addColorStop(1, node.color + '00');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(sx, sy, gr, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2);
+    ctx.fillStyle = node.selected ? '#ffffff' : node.color;
+    ctx.shadowColor = node.color; ctx.shadowBlur = 12;
+    ctx.fill(); ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.arc(sx, sy, r * 0.35, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fill();
+    if (scale >= 0.6) {
+      const fs = Math.min(11, Math.max(7, 9 * scale));
+      ctx.font = `${fs}px 'Share Tech Mono', monospace`;
+      ctx.textAlign = 'center';
+      const ly = sy - r - 6;
+      ctx.fillStyle = node.color; ctx.fillText(node.name, sx, ly);
+      ctx.fillStyle = 'rgba(200,220,230,0.75)'; ctx.fillText(node.aqi + ' AQI', sx, ly + fs + 2);
+    }
+  });
+  const av = nodes.find(n => n.name === 'ANAND VIHAR');
+  if (av) {
+    const { x: sx, y: sy } = toScreen(av.x, av.y);
+    ctx.font = `7px 'Share Tech Mono', monospace`;
+    ctx.fillStyle = 'rgba(0,212,255,0.4)';
+    ctx.fillText('O·N·A', sx, sy + Math.max(6, 18*scale) + 22);
+  }
+}
+
+container2.addEventListener('mousedown', e => {
+  isDragging = true;
+  dragMoved = false;
+  mouseDownX = e.clientX;
+  mouseDownY = e.clientY;
+  dragStartX = e.clientX - offsetX;
+  dragStartY = e.clientY - offsetY;
+  container2.style.cursor = 'grabbing';
+});
+window.addEventListener('mousemove', e => {
+  if (isDragging) {
+    if (Math.hypot(e.clientX - mouseDownX, e.clientY - mouseDownY) > 5) dragMoved = true;
+    offsetX = e.clientX - dragStartX;
+    offsetY = e.clientY - dragStartY;
+    draw();
+  }
+  const rect = container2.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const hit = hitTestNode(mx, my);
+  if (!isDragging) container2.style.cursor = hit?.key ? 'pointer' : 'grab';
+  if (hit) {
+    tooltip.style.display = 'block';
+    tooltip.style.left = (mx + 14) + 'px';
+    tooltip.style.top = (my - 10) + 'px';
+    document.getElementById('tt-name').textContent = hit.name;
+    const aqiEl = document.getElementById('tt-aqi');
+    aqiEl.textContent = hit.aqi + ' AQI · ' + hit.category;
+    aqiEl.style.color = hit.color;
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+window.addEventListener('mouseup', e => {
+  const wasDragging = isDragging;
+  isDragging = false;
+  container2.style.cursor = 'grab';
+  if (!wasDragging || dragMoved || e.target.closest('button')) return;
+  const rect = container2.getBoundingClientRect();
+  const insideMap = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+  if (!insideMap) return;
+  const hit = hitTestNode(e.clientX - rect.left, e.clientY - rect.top);
+  selectMapLocation(hit);
+});
+
+container2.addEventListener('click', e => {
+  if (dragMoved || e.target.closest('button')) return;
+  const rect = container2.getBoundingClientRect();
+  const hit = hitTestNode(e.clientX - rect.left, e.clientY - rect.top);
+  selectMapLocation(hit);
+});
+
+container2.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    dragMoved = false;
+    mouseDownX = e.touches[0].clientX;
+    mouseDownY = e.touches[0].clientY;
+    dragStartX = e.touches[0].clientX - offsetX;
+    dragStartY = e.touches[0].clientY - offsetY;
+  }
+}, { passive: true });
+container2.addEventListener('touchmove', e => {
+  if (isDragging && e.touches.length === 1) {
+    if (Math.hypot(e.touches[0].clientX - mouseDownX, e.touches[0].clientY - mouseDownY) > 5) dragMoved = true;
+    offsetX = e.touches[0].clientX - dragStartX;
+    offsetY = e.touches[0].clientY - dragStartY;
+    draw();
+  }
+}, { passive: true });
+container2.addEventListener('touchend', e => {
+  isDragging = false;
+  if (dragMoved || !e.changedTouches.length) return;
+  const rect = container2.getBoundingClientRect();
+  const hit = hitTestNode(e.changedTouches[0].clientX - rect.left, e.changedTouches[0].clientY - rect.top);
+  selectMapLocation(hit);
+});
+
+container2.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = container2.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const ns = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * delta));
+  offsetX = mx - (mx - offsetX) * (ns / scale);
+  offsetY = my - (my - offsetY) * (ns / scale);
+  scale = ns; draw();
+}, { passive: false });
+
+document.getElementById('zoomIn').addEventListener('click', () => {
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const ns = Math.min(MAX_SCALE, scale * 1.25);
+  offsetX = cx - (cx - offsetX) * (ns/scale);
+  offsetY = cy - (cy - offsetY) * (ns/scale);
+  scale = ns; draw();
+});
+document.getElementById('zoomOut').addEventListener('click', () => {
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const ns = Math.max(MIN_SCALE, scale * 0.8);
+  offsetX = cx - (cx - offsetX) * (ns/scale);
+  offsetY = cy - (cy - offsetY) * (ns/scale);
+  scale = ns; draw();
+});
+
+function recenter() {
+  scale = 1.0;
+  const allX = nodes.map(n=>n.x), allY = nodes.map(n=>n.y);
+  const cx = (Math.min(...allX) + Math.max(...allX)) / 2;
+  const cy = (Math.min(...allY) + Math.max(...allY)) / 2;
+  offsetX = canvas.width/2 - cx*scale;
+  offsetY = canvas.height/2 - cy*scale;
+  draw();
+}
+document.getElementById('recenterBtn').addEventListener('click', recenter);
+window.addEventListener('resize', () => {
+  resize();
+  if (graphVisible) renderDailyGraph();
+});
+resize();
+setTimeout(recenter, 50);
+
+let pulseT = 0;
+(function animate() {
+  pulseT += 0.02;
+  draw();
+  nodes.forEach(node => {
+    const { x: sx, y: sy } = toScreen(node.x, node.y);
+    const r = Math.max(6, 18 * scale);
+    const pr = r + (6 + 4 * Math.sin(pulseT + node.x * 0.05)) * scale;
+    ctx.beginPath(); ctx.arc(sx, sy, pr, 0, Math.PI*2);
+    ctx.strokeStyle = node.color + '55'; ctx.lineWidth = 1; ctx.stroke();
+  });
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
